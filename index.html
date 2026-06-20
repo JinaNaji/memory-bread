@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100白노트로 암기빵!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        :root {
+            --bg-color: #fdf6e3;
+            --primary-brown: #5c4033;
+            --secondary-brown: #8b5a2b;
+            --accent-brown: #bc6c25;
+            --light-brown: #d4a373;
+            --panel-bg: #fff8eb;
+            --border-color: #e6ccb2;
+            --highlight: #ffecd1;
+            --sidebar-bg: #f5ebd8;
+        }
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-brown);
+            margin: 0;
+            display: flex;
+            height: 100vh; /* 화면 전체 높이 사용 */
+            overflow: hidden; /* 전체 화면 스크롤 방지 */
+        }
+
+        /* 왼쪽 사이드바 영역 */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 3px solid var(--border-color);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(139, 90, 43, 0.1);
+        }
+
+        .sidebar h2 {
+            margin: 0;
+            color: var(--secondary-brown);
+            font-size: 1.8rem;
+            text-align: center;
+            border-bottom: 2px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .doc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .doc-item {
+            background-color: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--secondary-brown);
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-item:hover {
+            border-color: var(--light-brown);
+            transform: translateY(-2px);
+        }
+
+        .doc-item.active {
+            background-color: var(--highlight);
+            border-color: var(--accent-brown);
+            font-weight: bold;
+        }
+
+        .delete-doc-btn {
+            background: none;
+            border: none;
+            color: #e07a5f;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0 5px;
+        }
+
+        .delete-doc-btn:hover {
+            color: #d16b50;
+            transform: scale(1.2);
+        }
+
+        /* 오른쪽 메인 화면 영역 */
+        .main-content {
+            flex: 1;
+            padding: 30px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: var(--secondary-brown);
+            text-shadow: 3px 3px 0px rgba(212, 163, 115, 0.4);
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--light-brown);
+            margin-top: -10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 3px dashed var(--light-brown);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(139, 90, 43, 0.08);
+            transition: transform 0.2s;
+        }
+
+        .panel:hover {
+            transform: translateY(-2px);
+        }
+
+        .doc-name-input {
+            width: 100%;
+            font-size: 1.8rem;
+            font-family: 'Jua', sans-serif;
+            padding: 15px;
+            border: 3px solid var(--light-brown);
+            border-radius: 15px;
+            background-color: #fff;
+            color: var(--primary-brown);
+            box-sizing: border-box;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .doc-name-input::placeholder { color: #cbb49a; }
+        .doc-name-input:focus {
+            outline: none;
+            border-color: var(--accent-brown);
+            box-shadow: 0 0 15px rgba(212, 163, 115, 0.5);
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+            color: var(--secondary-brown);
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Jua', sans-serif;
+            font-size: 1.2rem;
+            box-sizing: border-box;
+            background-color: #fff;
+            transition: all 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--light-brown);
+            box-shadow: 0 0 10px rgba(212, 163, 115, 0.3);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background-color: var(--light-brown);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            font-family: 'Jua', sans-serif;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--accent-brown);
+            transition: all 0.1s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn:hover { background-color: #cd9a5b; }
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--accent-brown);
+        }
+
+        .btn-large {
+            background-color: var(--accent-brown);
+            font-size: 1.8rem;
+            padding: 20px;
+            box-shadow: 0 8px 0 #9c5c1f;
+            animation: pulse 2s infinite;
+        }
+        .btn-large:hover { background-color: #ab6222; }
+        .btn-large:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #9c5c1f;
+            animation: none;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-secondary {
+            background-color: #a68a64;
+            box-shadow: 0 6px 0 #7c6444;
+            width: auto;
+            margin-bottom: 20px;
+        }
+        .btn-secondary:hover { background-color: #8f7552; }
+
+        /* 추가된 문제 목록 */
+        #question-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 15px 0 25px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #question-list li {
+            background-color: #fffcf8;
+            border: 2px solid var(--border-color);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            color: var(--secondary-brown);
+            font-size: 1.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background-color: #e07a5f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+        }
+        .delete-btn:hover { background-color: #d16b50; }
+
+        /* 퀴즈 영역 */
+        .quiz-area { display: flex; flex-direction: column; gap: 25px; }
+        .card {
+            background-color: white;
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 15px rgba(139, 90, 43, 0.08);
+            position: relative;
+            animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-title {
+            margin-top: 0;
+            color: var(--secondary-brown);
+            font-size: 1.6rem;
+            border-bottom: 2px dashed var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .card-title::before { content: '📝'; margin-right: 10px; }
+        .user-answer {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Jua', sans-serif;
+            font-size: 1.2rem;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            background-color: #fffcf8;
+            resize: vertical;
+        }
+        .user-answer:focus {
+            outline: none;
+            border-color: var(--light-brown);
+            background-color: #fff;
+        }
+        .grade-btn {
+            background-color: var(--accent-brown);
+            box-shadow: 0 6px 0 #9c5c1f;
+        }
+        .grade-btn:hover { background-color: #ab6222; }
+        .grade-btn:active { box-shadow: 0 0 0 #9c5c1f; transform: translateY(6px); }
+
+        /* 결과 영역 */
+        .result-area {
+            margin-top: 25px;
+            padding: 25px;
+            background-color: #fefae0;
+            border-radius: 15px;
+            border: 2px dashed var(--light-brown);
+            text-align: center;
+            display: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .score-display {
+            font-size: 1.5rem;
+            color: var(--accent-brown);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .emoji-display {
+            font-size: 5rem;
+            margin: 20px 0;
+            animation: floating 2s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .original-answer {
+            text-align: left;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed var(--border-color);
+        }
+        .original-answer h4 { margin: 0 0 10px 0; color: var(--accent-brown); font-size: 1.3rem; }
+        .original-answer p {
+            margin: 0; line-height: 1.6; font-size: 1.2rem;
+            word-break: keep-all; background-color: #fff; padding: 15px;
+            border-radius: 10px; border: 1px solid var(--border-color);
+        }
+        .keyword-highlight {
+            background-color: var(--highlight);
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: var(--accent-brown);
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 2px;
+            box-shadow: 0 2px 0 rgba(188, 108, 37, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>📚 내 암기장</h2>
+        <button id="new-doc-btn" class="btn" style="font-size: 1.2rem; padding: 10px;">➕ 새 문서 만들기</button>
+        <ul id="doc-list" class="doc-list">
+            </ul>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>🍞 100白노트로 암기빵! 🍞</h1>
+            <div class="subtitle" id="main-subtitle">문제를 내고, 빵을 갉아먹으며 외워보자!</div>
+        </header>
+        
+        <div class="container" id="creation-mode">
+            <section class="panel">
+                <input type="text" id="doc-name" class="doc-name-input" placeholder="전체 문서 이름 (예: 기말고사 대비)">
+            </section>
+
+            <section class="panel">
+                <form id="add-form">
+                    <div class="form-group">
+                        <label for="title">📝 문제 제목</label>
+                        <input type="text" id="title" required placeholder="예: 경기체가의 향유층">
+                    </div>
+                    <div class="form-group">
+                        <label for="answer">💡 정답 내용</label>
+                        <textarea id="answer" required placeholder="예: 사대부, 무신정권기 신흥 사대부들이 향유했다..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords">🔑 필수 포함 키워드 (쉼표로 구분)</label>
+                        <input type="text" id="keywords" required placeholder="예: 사대부, 고려말, 신흥">
+                    </div>
+                    <button type="submit" class="btn">현재 문서에 문제 추가하기 ➕</button>
+                </form>
+            </section>
+
+            <section class="panel" id="added-questions-panel" style="display: none;">
+                <h3 style="color: var(--secondary-brown); margin-top: 0; font-size: 1.5rem;">
+                    현재 문서의 문제 (<span id="question-count">0</span>개)
+                </h3>
+                <ul id="question-list"></ul>
+                <button id="start-test-btn" class="btn btn-large">이 문서 시험 보기 🚀</button>
+            </section>
+        </div>
+
+        <div class="container" id="test-mode" style="display: none;">
+            <div style="text-align: center;">
+                <button id="back-to-edit-btn" class="btn btn-secondary">⬅️ 문제 추가 화면으로 돌아가기</button>
+            </div>
+            <h2 id="test-doc-title" style="text-align: center; color: var(--secondary-brown); margin-bottom: 20px; font-size: 2rem;"></h2>
+            <section class="quiz-area" id="quiz-area">
+                </section>
+        </div>
+    </main>
+
+    <script>
+        // 로컬 스토리지에서 데이터 불러오기 (없으면 빈 배열)
+        let docs = JSON.parse(localStorage.getItem('memoryBreadDocs')) || [];
+        let currentDocId = null;
+
+        // DOM 요소 모음
+        const docListEl = document.getElementById('doc-list');
+        const newDocBtn = document.getElementById('new-doc-btn');
+        const docNameInput = document.getElementById('doc-name');
+        
+        const form = document.getElementById('add-form');
+        const creationMode = document.getElementById('creation-mode');
+        const testMode = document.getElementById('test-mode');
+        const addedQuestionsPanel = document.getElementById('added-questions-panel');
+        const questionListEl = document.getElementById('question-list');
+        const questionCountEl = document.getElementById('question-count');
+        const startTestBtn = document.getElementById('start-test-btn');
+        const backToEditBtn = document.getElementById('back-to-edit-btn');
+        const quizArea = document.getElementById('quiz-area');
+        const testDocTitle = document.getElementById('test-doc-title');
+
+        // 초기화 함수
+        function init() {
+            if (docs.length === 0) {
+                createNewDoc('기말고사 대비'); // 기본 문서 1개 생성
+            } else {
+                currentDocId = docs[0].id;
+                renderSidebar();
+                loadCurrentDoc();
+            }
+        }
+
+        // 로컬 스토리지에 저장
+        function saveToStorage() {
+            localStorage.setItem('memoryBreadDocs', JSON.stringify(docs));
+            renderSidebar();
+        }
+
+        // 새 문서 생성
+        function createNewDoc(defaultTitle = '새로운 암기장') {
+            const newDoc = {
+                id: Date.now(),
+                title: defaultTitle,
+                questions: []
+            };
+            docs.push(newDoc);
+            currentDocId = newDoc.id;
+            saveToStorage();
+            loadCurrentDoc();
+            
+            // 시험 모드였다면 출제 모드로 강제 복귀
+            testMode.style.display = 'none';
+            creationMode.style.display = 'block';
+        }
+
+        // 새 문서 버튼 클릭 이벤트
+        newDocBtn.addEventListener('click', () => {
+            const title = prompt('새로운 암기장의 이름을 입력하세요:', '중간 혼합적 갈래');
+            if (title !== null) {
+                createNewDoc(title.trim() || '제목 없는 암기장');
+            }
+        });
+
+        // 문서 이름 수정 이벤트
+        docNameInput.addEventListener('input', (e) => {
+            const doc = docs.find(d => d.id === currentDocId);
+            if (doc) {
+                doc.title = e.target.value.trim() || '제목 없음';
+                saveToStorage(); // 사이드바 즉시 업데이트
+            }
+        });
+
+        // 사이드바 렌더링
+        function renderSidebar() {
+            docListEl.innerHTML = '';
+            docs.forEach(doc => {
+                const li = document.createElement('li');
+                li.className = `doc-item ${doc.id === currentDocId ? 'active' : ''}`;
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = doc.title;
+                titleSpan.style.flex = "1";
+                titleSpan.style.overflow = "hidden";
+                titleSpan.style.textOverflow = "ellipsis";
+                titleSpan.style.whiteSpace = "nowrap";
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-doc-btn';
+                delBtn.innerHTML = '🗑️';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation(); // 클릭 이벤트가 부모(li)로 전달되는 것 방지
+                    if(confirm(`'${doc.title}' 문서를 정말 삭제하시겠습니까?`)) {
+                        docs = docs.filter(d => d.id !== doc.id);
+                        if(docs.length === 0) createNewDoc('새로운 암기장');
+                        else if(currentDocId === doc.id) {
+                            currentDocId = docs[0].id;
+                        }
+                        saveToStorage();
+                        loadCurrentDoc();
+                    }
+                };
+
+                li.appendChild(titleSpan);
+                li.appendChild(delBtn);
+
+                li.onclick = () => {
+                    currentDocId = doc.id;
+                    saveToStorage();
+                    loadCurrentDoc();
+                    
+                    // 다른 문서를 클릭하면 무조건 출제 모드로 전환
+                    testMode.style.display = 'none';
+                    creationMode.style.display = 'block';
+                };
+
+                docListEl.appendChild(li);
+            });
+        }
+
+        // 현재 선택된 문서 데이터 화면에 불러오기
+        function loadCurrentDoc() {
+            const doc = docs.find(d => d.id === currentDocId);
+            if (!doc) return;
+
+            docNameInput.value = doc.title === '제목 없음' ? '' : doc.title;
+            updateAddedQuestionsList();
+        }
+
+        // 문제 추가 이벤트
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const titleInput = document.getElementById('title');
+            const answerInput = document.getElementById('answer');
+            const keywordsInput = document.getElementById('keywords');
+
+            const title = titleInput.value.trim();
+            const answer = answerInput.value.trim();
+            const keywords = keywordsInput.value.split(',')
+                                            .map(k => k.trim())
+                                            .filter(k => k.length > 0);
+
+            if (keywords.length === 0) {
+                alert('최소 1개 이상의 필수 키워드를 입력해주세요!');
+                return;
+            }
+
+            const doc = docs.find(d => d.id === currentDocId);
+            if (doc) {
+                doc.questions.push({
+                    title: title,
+                    answer: answer,
+                    keywords: keywords
+                });
+                saveToStorage();
+                updateAddedQuestionsList();
+            }
+            
+            // 입력 폼 초기화
+            titleInput.value = '';
+            answerInput.value = '';
+            keywordsInput.value = '';
+            titleInput.focus();
+        });
+
+        // 현재 문서의 추가된 문제 목록 업데이트
+        function updateAddedQuestionsList() {
+            const doc = docs.find(d => d.id === currentDocId);
+            if (!doc) return;
+
+            if (doc.questions.length > 0) {
+                addedQuestionsPanel.style.display = 'block';
+            } else {
+                addedQuestionsPanel.style.display = 'none';
+            }
+
+            questionCountEl.innerText = doc.questions.length;
+            questionListEl.innerHTML = '';
+
+            doc.questions.forEach((q, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${index + 1}. ${q.title}</span>
+                    <button class="delete-btn" onclick="deleteQuestion(${index})">삭제</button>
+                `;
+                questionListEl.appendChild(li);
+            });
+        }
+
+        // 개별 문제 삭제 함수
+        window.deleteQuestion = function(index) {
+            const doc = docs.find(d => d.id === currentDocId);
+            if (doc) {
+                doc.questions.splice(index, 1);
+                saveToStorage();
+                updateAddedQuestionsList();
+            }
+        }
+
+        // [시험 보기] 버튼 클릭 이벤트
+        startTestBtn.addEventListener('click', () => {
+            const doc = docs.find(d => d.id === currentDocId);
+            if (!doc || doc.questions.length === 0) return;
+
+            creationMode.style.display = 'none';
+            testMode.style.display = 'block';
+            
+            testDocTitle.innerText = doc.title ? `📄 ${doc.title}` : '📄 암기빵 퀴즈 타임!';
+            
+            // 스크롤이 있는 main-content를 맨 위로 올림
+            document.querySelector('.main-content').scrollTo(0, 0);
+
+            renderTestCards(doc.questions);
+        });
+
+        // [문제 추가로 돌아가기] 버튼 클릭
+        backToEditBtn.addEventListener('click', () => {
+            testMode.style.display = 'none';
+            creationMode.style.display = 'block';
+        });
+
+        // 퀴즈 카드 렌더링
+        function renderTestCards(questions) {
+            quizArea.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                card.innerHTML = `
+                    <h3 class="card-title">${index + 1}. ${q.title}</h3>
+                    <textarea class="user-answer" placeholder="여기에 당신이 기억하는 답안을 적어보세요!"></textarea>
+                    <button class="btn grade-btn">채점하기 💯</button>
+                    <div class="result-area">
+                        <div class="score-display"></div>
+                        <div class="emoji-display"></div>
+                        <div class="original-answer">
+                            <h4>원래 정답:</h4>
+                            <p class="highlighted-text"></p>
+                        </div>
+                    </div>
+                `;
+
+                quizArea.appendChild(card);
+
+                const gradeBtn = card.querySelector('.grade-btn');
+                const textarea = card.querySelector('.user-answer');
+                const resultArea = card.querySelector('.result-area');
+                const scoreDisplay = card.querySelector('.score-display');
+                const emojiDisplay = card.querySelector('.emoji-display');
+                const highlightedText = card.querySelector('.highlighted-text');
+
+                gradeBtn.addEventListener('click', () => {
+                    const userAnswer = textarea.value;
+                    let matchCount = 0;
+                    
+                    q.keywords.forEach(kw => {
+                        if (userAnswer.toLowerCase().includes(kw.toLowerCase())) {
+                            matchCount++;
+                        }
+                    });
+
+                    const percentage = Math.round((matchCount / q.keywords.length) * 100);
+                    
+                    let emoji = '';
+                    let feedbackMsg = '';
+                    
+                    if (percentage === 100) {
+                        emoji = '🤤';
+                        feedbackMsg = '완벽해요! 암기빵 맛있게 다 먹었다! 😋';
+                    } else if (percentage >= 66) {
+                        emoji = '🥯';
+                        feedbackMsg = '거의 다 외웠어요! 베이글만큼 남았네요! 😆';
+                    } else if (percentage >= 33) {
+                        emoji = '🥐';
+                        feedbackMsg = '절반 정도 외웠네요. 빵이 크루아상으로 변했어요! 😊';
+                    } else {
+                        emoji = '🍞';
+                        feedbackMsg = '아직 암기빵이 그대로예요! 다시 한 번 외워볼까요? 🥺';
+                    }
+
+                    scoreDisplay.innerHTML = `맞춘 키워드: ${matchCount} / ${q.keywords.length}개 (${percentage}%)<br><span style="font-size:1.1rem; color:#8b5a2b; margin-top:5px; display:inline-block;">${feedbackMsg}</span>`;
+                    emojiDisplay.innerHTML = emoji;
+                    
+                    let highlighted = q.answer;
+                    q.keywords.forEach(kw => {
+                        const regex = new RegExp('(' + escapeRegExp(kw) + ')', 'gi');
+                        highlighted = highlighted.replace(regex, '<span class="keyword-highlight">$1</span>');
+                    });
+                    highlightedText.innerHTML = highlighted;
+
+                    resultArea.style.display = 'block';
+                    gradeBtn.innerText = '다시 채점하기 🔄';
+                });
+            });
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // 앱 시작
+        init();
+    </script>
+</body>
+</html>
